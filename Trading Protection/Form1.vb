@@ -70,7 +70,7 @@ Public Class Form1
                     startProtectionTimer.Enabled = True
                     StartProtection = True
                     If returnAfterCb.Text = "30 Minutes" Then
-                        getIntervalUnProtect = 60000 / 1000
+                        getIntervalUnProtect = 3600000 / 1000
                     ElseIf returnAfterCb.Text = "1 Hour" Then
                         getIntervalUnProtect = 7200000 / 1000
                     End If
@@ -110,7 +110,7 @@ Public Class Form1
         If Protection = True Then
             If StartProtection = True Then
                 If returnAfterCb.Text = "30 Minutes" Then
-                    stopProtectionTimer.Interval = 60000
+                    stopProtectionTimer.Interval = 3600000
                 ElseIf returnAfterCb.Text = "1 Hour" Then
                     stopProtectionTimer.Interval = 7200000
                 End If
