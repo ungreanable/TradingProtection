@@ -9,7 +9,7 @@ Public Class Form1
     Dim StopProtection As Boolean = False
     Dim StartProtection As Boolean = False
     Dim getIntervalUnProtect As Double
-
+    Dim key As String
     Private Sub Form1_Load(sender As Object, e As EventArgs) Handles MyBase.Load
         protectBeforeCb.SelectedIndex = 0
         returnAfterCb.SelectedIndex = 0
@@ -42,7 +42,13 @@ Public Class Form1
                     Dim SEAsiaZoneInfo As TimeZoneInfo = TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time")
                     Dim SEAsiaTime As Date = TimeZoneInfo.ConvertTime(DateTime.Now, TimeZoneInfo.Local, SEAsiaZoneInfo)
                     Dim datetimeNewsGMT = DateTime.Parse(datetimeNews(i)).AddHours(7)
-                    If DateTime.Compare(SEAsiaTime, datetimeNewsGMT) < 0 Then
+                    Dim SEAsiaTimeAddTime As DateTime
+                    If protectBeforeCb.Text = "30 Minutes" Then
+                        SEAsiaTimeAddTime = SEAsiaTime.AddMinutes(30)
+                    ElseIf protectBeforeCb.Text = "1 Hour" Then
+                        SEAsiaTimeAddTime = SEAsiaTime.AddHours(1)
+                    End If
+                    If DateTime.Compare(SEAsiaTimeAddTime, datetimeNewsGMT) < 0 Then
                         newsDataGridView.Rows.Add(title(i), currency(i), datetimeNewsGMT, impact(i))
                     End If
                 End If
@@ -89,10 +95,30 @@ Public Class Form1
 
     Private Sub protectionBtn_Click(sender As Object, e As EventArgs) Handles protectionBtn.Click
         If Protection = False Then
-            protectionBtn.BackColor = Color.Red
-            protectionBtn.Text = "Stop Protection"
-            Protection = True
-            Timer1.Enabled = True
+            key = InputBox("Please enter the key: ", "Basic Authentication")
+            If key <> "" Then
+                'HTTP Request
+                Dim webStream As Stream
+                Dim webResponse = ""
+                Dim req As HttpWebRequest = CType(WebRequest.Create("http://localhost/forex/process.php?command=check&key=" & key), HttpWebRequest)
+                Dim res As HttpWebResponse
+                req.Method = "GET"
+                res = CType(req.GetResponse(), HttpWebResponse) ' Send Request
+                webStream = res.GetResponseStream() ' Get Response
+                Dim webStreamReader As New StreamReader(webStream)
+                While webStreamReader.Peek >= 0
+                    webResponse = webStreamReader.ReadToEnd()
+                End While
+                If webResponse.ToString = "{""output"":""OK""}" Then
+                    GetNewsFromForexFactory()
+                    protectionBtn.BackColor = Color.Red
+                    protectionBtn.Text = "Stop Protection"
+                    Protection = True
+                    Timer1.Enabled = True
+                Else
+                    MsgBox("Your key code is incorrect", MsgBoxStyle.Critical, "Basic Authentication")
+                End If
+            End If
         Else
             protectionBtn.BackColor = Color.Lime
             protectionBtn.Text = "Start Protection"
@@ -123,7 +149,7 @@ Public Class Form1
                 'HTTP Request
                 Dim webStream As Stream
                 Dim webResponse = ""
-                Dim req As HttpWebRequest = CType(WebRequest.Create("http://localhost/forex/process.php?command=freezeAfterTP&setValue=1"), HttpWebRequest)
+                Dim req As HttpWebRequest = CType(WebRequest.Create("http://localhost/forex/process.php?command=freezeAfterTP&setValue=1&key=" & key), HttpWebRequest)
                 Dim res As HttpWebResponse
                 req.Method = "GET"
                 res = CType(req.GetResponse(), HttpWebResponse) ' Send Request
@@ -147,7 +173,7 @@ Public Class Form1
                 'HTTP Request
                 Dim webStream As Stream
                 Dim webResponse = ""
-                Dim req As HttpWebRequest = CType(WebRequest.Create("http://localhost/forex/process.php?command=freezeAfterTP&setValue=0"), HttpWebRequest)
+                Dim req As HttpWebRequest = CType(WebRequest.Create("http://localhost/forex/process.php?command=freezeAfterTP&setValue=0&key=" & key), HttpWebRequest)
                 Dim res As HttpWebResponse
                 req.Method = "GET"
                 res = CType(req.GetResponse(), HttpWebResponse) ' Send Request
