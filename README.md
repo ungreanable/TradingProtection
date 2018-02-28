@@ -6,5 +6,7 @@ Trading Protection can help you to toggle your Expert Advisors and TerminalContr
 - Can adjust Protect before, Return after and Impact Level to protect for filter from news
 - News from Weekly Calendar ForexFactory
 
+{Basic Authentication by InputBox}
+
 # Screenshot
 ![Settings Window](https://raw.githubusercontent.com/ungreanable/TradingProtection/master/tradingprotection.png)
